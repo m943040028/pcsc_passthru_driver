@@ -62,7 +62,7 @@ Testing
 
 Make sure you have **vpcd** installed and configured. Make sure the file **/etc/reader.conf.d/vpcd** is existed. (It should be installed when you install [vsmartcard])
 
-Run **vicc**, after this command, a virtual smartcard is inerted to Reader0
+Run **vicc**, after this command, a virtual smartcard is inerted to Reader.0
 
 ```sh
 vicc -t iso7816 -v
@@ -74,14 +74,14 @@ Prepare a linux kernel image with minimal rootfs and this driver installed. Run 
 qemu-system-arm -kernel path/to/zImage -M vexpress-a15 -dtb path/to/vexpress-v2p-ca15-tc1.dtb -m 1024 -append 'console=ttyAMA0,38400n8 init=/linuxrc' -serial stdio
 ```
 
-You can append **-d guest_errors -D /tmp/qemu.log** for debugging.
+You can append **-d guest_errors -D /tmp/qemu.log** for debugging. Insert the driver and you can see 10 readers detected
 
 ```sh
 root@Vexpress:/ insmod /lib/modules/3.10.50/pcsc_passthru.ko 
 number of reader detected: 10
 ```
 
-You can check the state of Reader0 via
+You can check the state of Reader.0 via
 
 ```sh
 root@Vexpress:/ cat /sys/bus/platform/devices/pcsc_reader.0/state 
