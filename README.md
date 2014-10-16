@@ -3,7 +3,7 @@ PC/SC Pass Through Linux Driver
 
 This project is a side project of GlobalPlatform Secure Element API implementation in [OP-TEE].
 
-Goad of this project is to provide a smartcard simulation framework on-top on QEMU, it coperates with the following [PC/SC Lite] and [vsmartcard] to accomplish this feature.
+Goal of this project is to provide a smartcard simulation framework on-top of QEMU, it coperates with the following [PC/SC Lite] and [vsmartcard] to accomplish this feature.
 
 - **PC/SC Lite** is a PC/SC runtime environment that enables client application access to smartcard through a standard API.
 - **vsmartcard** is a smartcard simulation framework written in Python. It consist of two components:
