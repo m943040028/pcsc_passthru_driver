@@ -43,7 +43,7 @@ Get [vsmartcard] and install it
 
 ```sh
 git clone https://github.com/frankmorgner/vsmartcard.git
-cd vsmartcard
+cd vsmartcard/virtualsmartcard
 
 ./configure --sysconfdir=/etc
 make; sudo make install
