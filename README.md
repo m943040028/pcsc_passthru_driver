@@ -90,7 +90,7 @@ Reader State:
 Card Connected: [No]
 ```
 
-You can create a connection to the card inseted to the reader
+You can create a connection to the Virtual Card in the reader
 
 ```sh
 root@Vexpress:/ echo 1 > /sys/bus/platform/devices/pcsc_reader.0/connect

@@ -223,5 +223,7 @@ void pcsc_reader_update_state(struct pcsc_reader *r)
 {
 	mutex_lock(&r->mutex);
 	r->state = pcsc_reader_read_reg(r, PCSC_REG_READER_STATE);
+	if (r->connected && !(r->state & PCSC_READER_STATE_PRESENT))
+		r->connected = false;
 	mutex_unlock(&r->mutex);
 }
