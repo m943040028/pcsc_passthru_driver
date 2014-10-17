@@ -23,17 +23,26 @@
 #define _READER_H_
 
 #include <linux/platform_device.h>
+#include <linux/mutex.h>
+
+#define MAX_ATR_SIZE	33
 
 struct pcsc_reader {
+	bool connected;
 	uint8_t index;
 	uint32_t state;
 	void *mmio_base;
 	struct platform_device *pdev;
+	struct mutex mutex;
+
+	char atr[MAX_ATR_SIZE];
+	uint8_t atr_len;
 };
 
 int init_reader(struct pcsc_reader *r, uint8_t index, void *mmio_base);
+void deinit_reader(struct pcsc_reader *r);
 u32 pcsc_reader_read_reg(struct pcsc_reader *r, u32 offset);
 void pcsc_reader_write_reg(struct pcsc_reader *r, u32 offset, u32 value);
-size_t pcsc_reader_size(void);
+void pcsc_reader_update_state(struct pcsc_reader *r);
 
 #endif

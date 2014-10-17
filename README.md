@@ -85,14 +85,33 @@ You can check the state of Reader.0 via
 
 ```sh
 root@Vexpress:/ cat /sys/bus/platform/devices/pcsc_reader.0/state 
-Card inserted
+Reader State:
+  Card inserted
+Card Connected: [No]
 ```
 
+You can create a connection to the card inseted to the reader
+
+```sh
+root@Vexpress:/ echo 1 > /sys/bus/platform/devices/pcsc_reader.0/connect
+```
+
+Check the card state again, you can see the card is connected, and ATR is retrieved
+
+```sh
+root@Vexpress:/ cat /sys/bus/platform/devices/pcsc_reader.0/state 
+Reader State:
+  Card inserted
+  Shared Mode
+Card Connected: [Yes]
+ATR:3B 95 13 81 01 80 73 FF 01 00 0B
+```
 Kill the **vicc** and check it again
 
 ```sh
 root@Vexpress:/ cat /sys/bus/platform/devices/pcsc_reader.0/state 
-Card removed
+Reader State:
+  Card removed
 
 ```
 

@@ -41,22 +41,32 @@ struct pcsc_private {
 	u8 num_readers;
 };
 
-u32 pcsc_read_reg(struct pcsc_private *priv, u32 offset) {
+u32 pcsc_read_reg(struct pcsc_private *priv, u32 offset)
+{
 	return readl(priv->mmio_base + offset);
 }
-void pcsc_write_reg(struct pcsc_private *priv, u32 offset, u32 value) {
+void pcsc_write_reg(struct pcsc_private *priv, u32 offset, u32 value)
+{
 	return writel(value, priv->mmio_base + offset);
 }
-
 
 static irqreturn_t pcsc_interrupt_handler(int irq, void *data)
 {
 	struct device *dev = data;
 	struct pcsc_private *priv = dev_get_drvdata(dev);
-	printk(KERN_EMERG "pcsc irq occured, status=%x\n",
-		   pcsc_read_reg(priv, PCSC_REG_IRQ_STATUS));
+	u32 irq_status = pcsc_read_reg(priv, PCSC_REG_IRQ_STATUS);
+	dev_dbg(&priv->ofdev->dev, "pcsc irq occured, status=%08x\n", irq_status);
 
-	pcsc_write_reg(priv, PCSC_REG_IRQ_STATUS, PCSC_IRQ_STATE_CHANGE);
+	if (irq_status & PCSC_IRQ_STATE_CHANGE)
+	{
+		int i;
+		for (i = 0; i < priv->num_readers; i++)
+		{
+			pcsc_reader_update_state(&priv->readers[i]);
+		}
+	}
+
+	pcsc_write_reg(priv, PCSC_REG_IRQ_STATUS, irq_status);
 	return IRQ_HANDLED;
 }
 
@@ -77,6 +87,16 @@ static int populate_pcsc_readers(struct pcsc_private *priv)
 	return 0;
 }
 
+static void free_pcsc_readers(struct pcsc_private *priv)
+{
+	int i;
+	for (i = 0; i < priv->num_readers; i++)
+	{
+		deinit_reader(priv->readers + i);
+	}
+	kfree(priv->readers);
+}
+
 static int __init pcsc_probe(struct platform_device *ofdev)
 {
 	int rc;
@@ -94,13 +114,6 @@ static int __init pcsc_probe(struct platform_device *ofdev)
 
 	dev_set_drvdata(dev, priv);
 	priv->ofdev = ofdev;
-
-	priv->irq = irq_of_parse_and_map(ofdev->dev.of_node, 0);
-	rc = request_irq(priv->irq, pcsc_interrupt_handler, 0,
-			 "pcsc-passthru", dev);
-	if (rc)
-		goto err_request_irq;
-
 	priv->mmio_base = of_iomap(ofdev->dev.of_node, 0);
 	if (!priv->mmio_base) {
 		dev_err(dev, "failed to of_iomap\n");
@@ -115,14 +128,20 @@ static int __init pcsc_probe(struct platform_device *ofdev)
 	if (rc)
 		goto err_create_reader;
 
+	priv->irq = irq_of_parse_and_map(ofdev->dev.of_node, 0);
+	rc = request_irq(priv->irq, pcsc_interrupt_handler, 0,
+			 "pcsc-passthru", dev);
+	if (rc)
+		goto err_request_irq;
+
 	return 0;
 
+err_request_irq:
+	irq_dispose_mapping(priv->irq);
+	free_pcsc_readers(priv);
 err_create_reader:
 	iounmap(priv->mmio_base);
 err_iomap:
-	free_irq(priv->irq, dev);
-err_request_irq:
-	irq_dispose_mapping(priv->irq);
 	kfree(priv);
 
 	return rc;
