@@ -22,6 +22,7 @@
 #include <linux/kernel.h>
 #include <linux/io.h>
 #include <linux/string.h>
+#include <linux/slab.h>
 #include <linux/platform_device.h>
 #include <linux/device.h>
 
@@ -76,7 +77,7 @@ static void pcsc_reader_dump_state(struct pcsc_reader *r, char *buf)
 
 	if (r->connected)
 	{
-		buf += sprintf(buf, "ATR:");
+		buf += sprintf(buf, "ATR: ");
 		dump_hex(buf, r->atr, r->atr_len);
 	}
 }
@@ -109,6 +110,33 @@ static void pcsc_reader_connect(struct pcsc_reader *r)
 	r->connected = true;
 	pcsc_reader_get_atr(r);
 	mutex_unlock(&r->mutex);
+}
+
+static int pcsc_reader_transmit(struct pcsc_reader *r, char *tx_buf, size_t tx_size,
+					char *rx_buf, size_t *rx_size)
+{
+	if (!r->connected)
+	{
+		dev_info(&r->pdev->dev, "Card is not connected");
+		return -EINVAL;
+	}
+
+	mutex_lock(&r->mutex);
+	pcsc_reader_write_reg(r, PCSC_REG_READER_TX_ADDR,
+			virt_to_phys(tx_buf));
+	pcsc_reader_write_reg(r, PCSC_REG_READER_TX_SIZE,
+			tx_size);
+	pcsc_reader_write_reg(r, PCSC_REG_READER_RX_ADDR,
+			virt_to_phys(rx_buf));
+	pcsc_reader_write_reg(r, PCSC_REG_READER_RX_SIZE,
+			*rx_size);
+	pcsc_reader_write_reg(r, PCSC_REG_READER_CONTROL, 
+			PCSC_READER_CTL_TRANSMIT);
+
+	*rx_size = pcsc_reader_read_reg(r, PCSC_REG_READER_RX_SIZE);
+	mutex_unlock(&r->mutex);
+
+	return 0;
 }
 
 static void pcsc_reader_disconnect(struct pcsc_reader *r) 
@@ -163,8 +191,57 @@ static ssize_t store_connect(struct device *dev,
 	return count;
 }
 
+static ssize_t store_transmit(struct device *dev,
+				struct device_attribute *attr, const char *buf,
+				size_t count)
+{
+	struct pcsc_reader *r = dev_get_drvdata(dev);
+	int err;
+
+	char tx_buf[MAX_BUFFER_SIZE], rx_buf[MAX_BUFFER_SIZE];
+
+	/* 
+	 * Output format should look like "90 0C ..."
+	 * 1 Byte == 2 ASCII characters + 1 Space 
+	 * */
+	char *rx_output_buf = kmalloc(MAX_BUFFER_SIZE * 3, GFP_KERNEL);
+
+	/* 
+	 * Input string should look like "00 A4 00 00 02 3F 00 ...",
+	 * convert the string to tx_buf 
+	 * */
+	char * const delim = " ";
+	char *token, *cur = (char *)buf;
+	size_t tx_size = 0, rx_size = sizeof(rx_buf);
+	while ( (token = strsep(&cur, delim)))
+	{
+		char *endp;
+		tx_buf[tx_size] = (char)simple_strtoul(token, &endp, 16);
+		if (endp == token)
+			return -EINVAL;
+		tx_size++;
+	}
+
+	if (r->state & PCSC_READER_STATE_EMPTY)
+	{
+		dev_err(&r->pdev->dev, "Card is not inserted");
+		return -EINVAL;
+	}
+
+	err = pcsc_reader_transmit(r, tx_buf, tx_size, rx_buf, &rx_size);
+	if (err)
+		return err;
+
+	dump_hex(rx_output_buf, rx_buf, rx_size);
+	dev_info(dev, "Received: %s", rx_output_buf);
+	kfree(rx_output_buf);
+
+	return count;
+}
+
 static DEVICE_ATTR(state, 0400, show_reader_state, NULL);
 static DEVICE_ATTR(connect, 0200, NULL, store_connect);
+static DEVICE_ATTR(transmit, 0200, NULL, store_transmit);
 
 static __init int add_reader(struct pcsc_reader *r)
 {
@@ -201,6 +278,7 @@ int __init init_reader(struct pcsc_reader *r, uint8_t index, void *mmio_base)
 	dev_set_drvdata(&r->pdev->dev, r);
 	device_create_file(&r->pdev->dev, &dev_attr_state);
 	device_create_file(&r->pdev->dev, &dev_attr_connect);
+	device_create_file(&r->pdev->dev, &dev_attr_transmit);
 
 	return 0;
 }

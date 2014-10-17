@@ -84,7 +84,8 @@ number of reader detected: 10
 You can check the state of Reader.0 via
 
 ```sh
-root@Vexpress:/ cat /sys/bus/platform/devices/pcsc_reader.0/state 
+root@Vexpress:/ cd sys/devices/platform/pcsc_reader.0
+root@Vexpress:/sys/devices/platform/pcsc_reader.0 cat state
 Reader State:
   Card inserted
 Card Connected: [No]
@@ -93,23 +94,30 @@ Card Connected: [No]
 You can create a connection to the Virtual Card in the reader
 
 ```sh
-root@Vexpress:/ echo 1 > /sys/bus/platform/devices/pcsc_reader.0/connect
+root@Vexpress:/sys/devices/platform/pcsc_reader.0 echo 1 > connect
 ```
 
 Check the card state again, you can see the card is connected, and ATR is retrieved
 
 ```sh
-root@Vexpress:/ cat /sys/bus/platform/devices/pcsc_reader.0/state 
+root@Vexpress:/sys/devices/platform/pcsc_reader.0 cat state
 Reader State:
   Card inserted
   Shared Mode
 Card Connected: [Yes]
 ATR:3B 95 13 81 01 80 73 FF 01 00 0B
 ```
-Kill the **vicc** and check it again
+Upon connected, you start to trasmit APDU ([ISO/IEC7816-4]), here is an example
 
 ```sh
-root@Vexpress:/ cat /sys/bus/platform/devices/pcsc_reader.0/state 
+root@Vexpress:/sys/devices/platform/pcsc_reader.0 echo "00 A4 00 00 02 3F 00" > transmit 
+platform pcsc_reader.0: Received: 6F 0A 83 02 3F 00 8A 01 05 82 01 38 61 0C
+```
+
+To test card removal, kill the **vicc** and check it again
+
+```sh
+root@Vexpress:/sys/devices/platform/pcsc_reader.0 cat state
 Reader State:
   Card removed
 
@@ -120,4 +128,5 @@ Reader State:
 [PC/SC Lite]: http://pcsclite.alioth.debian.org/pcsclite.html
 [vsmartcard]: http://frankmorgner.github.io/vsmartcard/virtualsmartcard/README.html
 [linux-stable-kernel]: https://git.linaro.org/?p=kernel/linux-linaro-stable.git
+[ISO/IEC7816-4]:http://www.embedx.com/pdfs/ISO_STD_7816/info_isoiec7816-4%7Bed2.0%7Den.pdf
 

@@ -122,7 +122,7 @@ static int __init pcsc_probe(struct platform_device *ofdev)
 	}
 
 	priv->num_readers = pcsc_read_reg(priv, PCSC_REG_NUM_READERS);
-	printk(KERN_EMERG "number of reader detected: %d\n", priv->num_readers);
+	dev_info(&ofdev->dev, "number of reader detected: %d\n", priv->num_readers);
 
 	rc = populate_pcsc_readers(priv);
 	if (rc)

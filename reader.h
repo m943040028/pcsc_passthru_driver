@@ -25,7 +25,9 @@
 #include <linux/platform_device.h>
 #include <linux/mutex.h>
 
-#define MAX_ATR_SIZE	33
+#define MAX_ATR_SIZE 33
+#define	MAX_BUFFER_SIZE	264 
+#define MAX_BUFFER_SIZE_EXTENDED (4 + 3 + (1<<16) + 3 + 2)
 
 struct pcsc_reader {
 	bool connected;

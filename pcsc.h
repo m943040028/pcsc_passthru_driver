@@ -53,6 +53,7 @@
 #define     PCSC_READER_CTL_CONNECT         0x1000
 #define     PCSC_READER_CTL_DISCONNECT      0x2000
 #define     PCSC_READER_CTL_READ_ATR        0x4000
+#define     PCSC_READER_CTL_TRANSMIT        0x8000
 #define PCSC_REG_READER_STATE   0x4
 /* reader state, directly mapped to pcsclite */
 #define     PCSC_READER_STATE_IGNORE    0x0001
