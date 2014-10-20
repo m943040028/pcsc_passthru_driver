@@ -71,7 +71,8 @@ vicc -t iso7816 -v
 Prepare a linux kernel image with minimal rootfs and this driver installed. Run it with QEMU
 
 ```sh
-qemu-system-arm -kernel path/to/zImage -M vexpress-a15 -dtb path/to/vexpress-v2p-ca15-tc1.dtb -m 1024 -append 'console=ttyAMA0,38400n8 init=/linuxrc' -serial stdio
+qemu-system-arm -kernel path/to/zImage -M vexpress-a15 -dtb path/to/vexpress-v2p-ca15-tc1.dtb \
+-m 1024 -append 'console=ttyAMA0,38400n8 init=/linuxrc' -serial stdio
 ```
 
 You can append **-d guest_errors -D /tmp/qemu.log** for debugging. Insert the driver and you can see 10 readers detected
@@ -97,7 +98,7 @@ You can create a connection to the Virtual Card in the reader
 root@Vexpress:/sys/devices/platform/pcsc_reader.0 echo 1 > connect
 ```
 
-Check the card state again, you can see the card is connected, and ATR is retrieved
+Check the card state again, you can see the card is connected, and ATR([ISO/IEC7816-3]) is retrieved
 
 ```sh
 root@Vexpress:/sys/devices/platform/pcsc_reader.0 cat state
@@ -107,7 +108,7 @@ Reader State:
 Card Connected: [Yes]
 ATR:3B 95 13 81 01 80 73 FF 01 00 0B
 ```
-Upon connected, you start to trasmit APDU ([ISO/IEC7816-4]), here is an example
+Upon connected, you may start to trasmit APDU ([ISO/IEC7816-4]), here is an example
 
 ```sh
 root@Vexpress:/sys/devices/platform/pcsc_reader.0 echo "00 A4 00 00 02 3F 00" > transmit 
@@ -128,5 +129,6 @@ Reader State:
 [PC/SC Lite]: http://pcsclite.alioth.debian.org/pcsclite.html
 [vsmartcard]: http://frankmorgner.github.io/vsmartcard/virtualsmartcard/README.html
 [linux-stable-kernel]: https://git.linaro.org/?p=kernel/linux-linaro-stable.git
+[ISO/IEC7816-3]:http://read.pudn.com/downloads132/doc/comm/563504/ISO-IEC%207816/ISO%2BIEC%207816-3-2006.pdf
 [ISO/IEC7816-4]:http://www.embedx.com/pdfs/ISO_STD_7816/info_isoiec7816-4%7Bed2.0%7Den.pdf
 
