@@ -108,7 +108,7 @@ Reader State:
 Card Connected: [Yes]
 ATR: 3B 95 13 81 01 80 73 FF 01 00 0B
 ```
-Upon connected, you may start to trasmit APDU ([ISO/IEC7816-4]), here is an example
+Upon connected, you may start to trasmit APDU([ISO/IEC7816-4]), here is an example
 
 ```sh
 root@Vexpress:/sys/devices/platform/pcsc_reader.0 echo "00 A4 00 00 02 3F 00" > transmit 
