@@ -29,7 +29,7 @@ git checkout -b smart_card_emul origin/smart_card_emul
 make; sudo make install
 ```
 
-Get [linux-stable-kernel]. By default, it adds a device to ARM Vexpress platform. You need to add the following section to device file(**arch/arm/boot/dts/vexpress-v2p-ca15-tc1.dts**) to describe this device.
+Get [linaro-stable-kernel]. By default, it adds a device to ARM Vexpress platform. You need to add the following section to device file(**arch/arm/boot/dts/vexpress-v2p-ca15-tc1.dts**) to describe this device.
 
 ```c
 pcsc@0x1f000000 {
@@ -106,7 +106,7 @@ Reader State:
   Card inserted
   Shared Mode
 Card Connected: [Yes]
-ATR:3B 95 13 81 01 80 73 FF 01 00 0B
+ATR: 3B 95 13 81 01 80 73 FF 01 00 0B
 ```
 Upon connected, you may start to trasmit APDU ([ISO/IEC7816-4]), here is an example
 
@@ -128,7 +128,7 @@ Reader State:
 [QEMU]: https://github.com/m943040028/qemu/tree/smart_card_emul
 [PC/SC Lite]: http://pcsclite.alioth.debian.org/pcsclite.html
 [vsmartcard]: http://frankmorgner.github.io/vsmartcard/virtualsmartcard/README.html
-[linux-stable-kernel]: https://git.linaro.org/?p=kernel/linux-linaro-stable.git
+[linaro-stable-kernel]: https://git.linaro.org/?p=kernel/linux-linaro-stable.git
 [ISO/IEC7816-3]:http://read.pudn.com/downloads132/doc/comm/563504/ISO-IEC%207816/ISO%2BIEC%207816-3-2006.pdf
 [ISO/IEC7816-4]:http://www.embedx.com/pdfs/ISO_STD_7816/info_isoiec7816-4%7Bed2.0%7Den.pdf
 
